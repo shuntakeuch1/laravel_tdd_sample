@@ -12,17 +12,8 @@ use Illuminate\Http\Request;
 | is assigned the "api" middleware group. Enjoy building your API!
 |
 */
-Route::get('customers',function (){
-    return response()->json(\App\Customer::query()->select(['id','name'])->get());
-});
-Route::post('customers',function (Request $request){
-    if (!$request->json('name')){
-        return response()->json([],\Illuminate\Http\Response::HTTP_UNPROCESSABLE_ENTITY);
-    }
-    $customer = new \App\Customer();
-    $customer->name = $request->json('name');
-    $customer->save();
-});
+Route::get('customers','ApiController@getCustomers');
+Route::post('customers','ApiController@postCustomers');
 Route::get('customers/{customer_id}',function (){});
 Route::put('customers/{customer_id}',function (){});
 Route::delete('customers/{customer_id}',function (){});
