@@ -8,6 +8,14 @@ use Illuminate\Foundation\Testing\RefreshDatabase;
 
 class ReportTest extends TestCase
 {
+    use RefreshDatabase;
+    
+    public function setUp()
+    {
+        parent::setUp();
+        $this->artisan('db:seed',['--class' => 'TestDataSeeder']);
+    }
+
     /**
      *
      * @return void
@@ -22,10 +30,59 @@ class ReportTest extends TestCase
      *
      * @return void
      */
+    public function test_api_customersにGETメソッドでアクセスするとJSONが返却される()
+    {
+        $response = $this->get('api/customers');
+        $response->assertStatus(200);
+        $this->assertThat($response->content(), $this->isJson());
+    }
+
+    /**
+     *
+     * @return void
+     */
+    public function test_api_customersにGETメソッドで取得できる顧客情報のJSON形式は要件通りである()
+    {
+        $response = $this->get('api/customers');
+        $customers = $response->json();
+        $customer = $customers[0];
+        $this->assertSame(['id','name'], array_keys($customer));
+    }
+
+    /**
+     *
+     * @return void
+     */
+    public function test_api_customersにGETメソッドでアクセスすると2件の顧客リストが返却される()
+    {
+        $response = $this->get('api/customers');
+        $response->assertJsonCount(2);
+    }
+
+    /**
+     *
+     * @return void
+     */
     public function test_api_customersにPOSTメソッドでアクセスできる()
     {
-        $response = $this->post('api/customers');
+        $customer = [
+            'name' => 'customer_name',
+        ];
+        $response = $this->postJson('api/customers',$customer);
         $response->assertStatus(200);
+    }
+
+    /**
+     * @test
+     * @return void
+     */
+    public function api_customersに顧客名をPOSTするとcustomersテーブルにそのデータが追加される()
+    {
+        $params = [
+            'name' => '顧客名',
+        ];
+        $this->postJson('api/customers', $params);
+        $this->assertDatabaseHas('customers', $params);
     }
 
     /**
